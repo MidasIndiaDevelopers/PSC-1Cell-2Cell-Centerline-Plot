@@ -22,7 +22,7 @@ class MAPI_KEY:
 #2 midas API link code:
 def MidasAPI(method, command, body=None):
     """Method, Command, Body.  Sample: MidasAPI("PUT","/db/NODE",{"Assign":{1{'X':0, 'Y':0, 'Z':0}}})"""
-    base_url = "https://moa-engineers.midasit.com:443/civil"
+    global base_url
     mapi_key = MAPI_KEY.get_key()
 
     url = base_url + command
@@ -3592,6 +3592,7 @@ def unique_lists(li1, li2):
 #---------------------------------------------------------------------------------------------------------------
 #Function to get centerline of the cross-section PSC 1-Cell & 2-Cell
 def PSC_1CEL_XY(sec, offset = "CC"):
+    fig , ax = plt.subplots()
     """INCOMPLETE.  Section ID.  Sample:  PSC_1CEL(3)."""
     if type(sec) == int:
         inp = sect_inp(sec)
@@ -3991,7 +3992,11 @@ def PSC_1CEL_XY(sec, offset = "CC"):
         next1 = mid_web[i + 1]
         plt.plot([next1['xm'], current['xm']], [next1['ym'], current['ym']], 'y-', marker ='o')
     # Display plot
-    plt.show()
+    # plt.show()
+    # ax.plot(x, y, label=f'Section')
+    ax.set_title(f'Centerline Plot')
+    # ax.legend()
+    return fig
 #---------------------------------------------------------------------------------------------------------------
 #Function to get the number of tendons and distributed based on effective tendon
 def tendon_req(dir, elem, cc, dc, s1 = 98.7, s2 = 140, min_strand = 7, max_strand = 19, max_tendon = 5, maxt_extrf = 2):
@@ -3999,3 +4004,20 @@ def tendon_req(dir, elem, cc, dc, s1 = 98.7, s2 = 140, min_strand = 7, max_stran
     eff_P = dir['P'][0]
     eff_ecc = dir['e'][0]
     eff_PT_area = dir['PT_area'][0]
+
+
+
+# Function to get PSC section for dropdown 
+def get_Section():
+    response = MidasAPI('GET', '/db/sect')
+    section_list = []
+
+    if 'SECT' in response:
+        for sect_id, sect_data in response['SECT'].items():
+            sect_type = sect_data.get('SECTTYPE', '')
+            shape = sect_data.get('SECT_BEFORE', {}).get('SHAPE', '')
+
+            if sect_type == "PSC" and shape in ["1CEL", "2CEL"]:
+                section_list.append((int(sect_id), sect_data.get('SECT_NAME', 'Unnamed Section')))
+
+    return section_list
