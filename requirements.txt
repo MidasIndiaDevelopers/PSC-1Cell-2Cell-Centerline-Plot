@@ -2,3 +2,4 @@ streamlit
 matplotlib
 scipy 
 requests
+midas_civil => 1.0.8
